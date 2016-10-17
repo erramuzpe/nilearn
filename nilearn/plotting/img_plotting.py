@@ -53,7 +53,7 @@ def show():
 # Core, usage-agnostic functions
 
 
-def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
+def _get_colorbar_and_data_ranges(stat_map_data, vmin, vmax, symmetric_cbar, kwargs,
                                   force_min_stat_map_value=None):
     """ Internal function for setting colormap and colorbar limits
 
@@ -63,13 +63,15 @@ def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
     The limits for the colorbar depend on the symmetric_cbar argument, please
     refer to docstring of plot_stat_map.
     """
-    if 'vmin' in kwargs:
-        raise ValueError('this function does not accept a "vmin" '
-                         'argument, as it uses a symmetrical range '
-                         'defined via the vmax argument. To threshold '
-                         'the plotted map, use the "threshold" argument')
+    # if 'vmin' in kwargs:
+    #     raise ValueError('this function does not accept a "vmin" '
+    #                      'argument, as it uses a symmetrical range '
+    #                      'defined via the vmax argument. To threshold '
+    #                      'the plotted map, use the "threshold" argument')
 
     # make sure that the color range is symmetrical
+    _vmin = vmin
+    
     if vmax is None or symmetric_cbar in ['auto', False]:
         # Avoid dealing with masked_array:
         if hasattr(stat_map_data, '_mask'):
@@ -102,7 +104,7 @@ def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
             cbar_vmax = stat_map_max
     else:
         cbar_vmin, cbar_vmax = None, None
-    return cbar_vmin, cbar_vmax, vmin, vmax
+    return _vmin, cbar_vmax, _vmin, vmax
 
 
 def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
@@ -1080,14 +1082,14 @@ def plot_glass_brain(stat_map_img,
         stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
         if plot_abs:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-                _safe_get_data(stat_map_img),
+                _safe_get_data(stat_map_img), vmin,
                 vmax,
                 symmetric_cbar,
                 kwargs,
                 0)
         else:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-                _safe_get_data(stat_map_img),
+                _safe_get_data(stat_map_img), vmin,
                 vmax,
                 symmetric_cbar,
                 kwargs)
